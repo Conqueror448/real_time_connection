@@ -89,12 +89,12 @@ DATABASES = {
         "PORT": os.environ.get("SQL_PORT", "5432"),
     }
 }
-
+REDIS_URL = os.environ.get("REDIS_URL", "redis://redis-prod:6379/0")
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("redis", 6379)],
+            "hosts":  [REDIS_URL],
         },
     },
 }
