@@ -1,6 +1,17 @@
 version: '3.7'
 
 services:
+  redis:                       # ① new
+    image: redis:7-alpine
+    container_name: redis-dev
+    ports:
+      - "6379:6379"            # optional
+    volumes:
+      - redis_data:/data
+    networks:
+      - dev
+    restart: unless-stopped
+
   backend:
     build: ./backend
     container_name: "backend-app-dev"
@@ -13,6 +24,7 @@ services:
       - dev
     depends_on:
       - db
+      - redis
     env_file:
       - ./.env.dev
     stdin_open: true
@@ -51,6 +63,7 @@ services:
 volumes:
   postgres_data:
   node-modules:
+  redis_data: 
 
 networks:
   dev:
