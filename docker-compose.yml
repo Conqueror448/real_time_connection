@@ -1,5 +1,3 @@
-version: '3.7'
-
 services:
   redis:                       # ① new
     image: redis:7-alpine
