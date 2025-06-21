@@ -1,0 +1,56 @@
+version: '3.7'
+
+services:
+  backend:
+    build: ./backend
+    container_name: "backend-app-dev"
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend/:/usr/src/app/
+    ports:
+      - 8000:8000
+    networks:
+      - dev
+    depends_on:
+      - db
+    env_file:
+      - ./.env.dev
+    stdin_open: true
+    tty: true
+
+  frontend:
+    build: ./frontend
+    container_name: "frontend-dev"
+    volumes:
+      - ./frontend:/app
+      - node-modules:/app/node_modules
+    networks:
+      - dev
+    ports:
+      - '3000:3000'
+    stdin_open: true
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - "backend"
+    command:
+      npm start
+
+  db:
+    image: postgres:13.2-alpine
+    container_name: "db-dev"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dev
+    environment:
+      - POSTGRES_USER=django
+      - POSTGRES_PASSWORD=django
+      - POSTGRES_DB=django_dev
+
+volumes:
+  postgres_data:
+  node-modules:
+
+networks:
+  dev:
