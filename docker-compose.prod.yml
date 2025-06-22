@@ -28,8 +28,8 @@ services:
       - redis-prod
     networks:
       - prod
-    expose:
-      - "8000"          # App Platform or an Nginx container will publish this
+    ports:
+      - "8000:8000"
 
   # ─────────────────────────── Front-end (React build) ─────────────────────────
   frontend-prod:
@@ -41,6 +41,7 @@ services:
       - static_volume:/home/app/web/api/static
     environment:
       - NODE_ENV=production
+      - REACT_APP_WS_URL=ws://localhost:8000/ws/echo/
     depends_on:
       - backend-prod
     networks:
