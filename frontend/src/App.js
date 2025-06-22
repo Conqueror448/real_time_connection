@@ -7,37 +7,47 @@ function App() {
   const wsRef = useRef(null);
 
   useEffect(() => {
-    // For HTTPS in prod switch to wss://<your-domain>/ws/echo/
-    const socket = new WebSocket("ws://localhost/ws/echo/");
+    /* -----------------------------------------------------------
+       Build the correct WebSocket URL for any environment
+       ----------------------------------------------------------- */
+    const scheme   = window.location.protocol === "https:" ? "wss" : "ws";
+    const host     = window.location.hostname;
+    const portPart =
+      // In local dev we exposed backend on 8000; in prod
+      // behind Nginx we leave the port blank.
+      host === "localhost" || host === "127.0.0.1" ? ":8000" : "";
+
+    const socket = new WebSocket(`${scheme}://${host}${portPart}/ws/echo/`);
     wsRef.current = socket;
 
     socket.onopen = () => {
       console.log("🔌 WebSocket connected");
-      socket.send("Frontend says hello!"); // handshake test
+      socket.send("Frontend says hello!");      // handshake test
     };
 
     socket.onmessage = (event) => {
-      // EchoConsumer sends back plain text OR JSON; handle either
+      // EchoConsumer may send plain text OR JSON; handle either
       let data = event.data;
       try {
-        data = JSON.parse(event.data);
-        // If you kept my earlier EchoConsumer example:
-        data = data.echo ?? JSON.stringify(data);
+        const parsed = JSON.parse(event.data);
+        data = parsed.echo ?? JSON.stringify(parsed);
       } catch (_) {
-        /* not JSON, leave as-is */
+        /* not JSON, keep raw */
       }
       setMessages((prev) => [...prev, data]);
     };
 
-    socket.onclose = () => console.log("WebSocket closed");
-    socket.onerror = (err) => console.error("WebSocket error", err);
+    socket.onclose  = ()  => console.log("WebSocket closed");
+    socket.onerror  = (e) => console.error("WebSocket error", e);
 
-    return () => socket.close(); // clean up on unmount
+    return () => socket.close();                // cleanup on unmount
   }, []);
 
   const sendPing = () => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send("Ping from React at " + new Date().toLocaleTimeString());
+      wsRef.current.send(
+        "Ping from React at " + new Date().toLocaleTimeString()
+      );
     }
   };
 
